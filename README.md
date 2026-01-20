@@ -373,6 +373,15 @@ curl "http://localhost:8000/users/1"
 # Response: User now has 18 points
 ```
 
+## 🔮 Future Improvements
+
+1. **Authentication**: Add JWT tokens for secure API access
+2. **Admin Endpoints**: For managing users and transactions
+3. **Reporting**: Generate recycling reports and analytics
+4. **Webhooks**: Real-time notifications for machine integration
+5. **Caching**: Redis for frequently accessed data
+6. **Migration**: PostgreSQL for production deployment
+
 ## 📄 License
 
 Developed for DropMe technical assessment.
