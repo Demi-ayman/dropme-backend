@@ -1,13 +1,16 @@
-# 🚀 DropMe Recycling Backend API
+# 🚀 DropMe Recycling Backend
 
-A complete backend API for recycling machines that enables users to **Scan → Recycle → Earn Points**.
+A FastAPI backend service for recycling machines that enables users to **Scan → Recycle → Earn Points**.
 
----
+## 📋 Quick Start
 
-## 📋 **QUICK START**
+### **Prerequisites**
+- Python 3.11+
+- pip package manager
 
-### **1. Clone & Setup**
+### **Installation**
 ```bash
+# Clone repository
 git clone <your-repo-url>
 cd dropme-backend
 
@@ -22,75 +25,80 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-```
 
-### **2. Run the Server**
-```bash
+# Run the server
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### **3. Open API Documentation**
-**👉 Go to:** [http://localhost:8000/docs](http://localhost:8000/docs)
+### **Access API Documentation**
+**👉 Open browser:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
----
-
-## 📁 **PROJECT STRUCTURE**
+## 📁 Project Structure
 ```
 dropme-backend/
 ├── app/
 │   ├── common/           # Shared utilities
-│   │   ├── exceptions.py
-│   │   └── responses.py
-│   ├── core/             # Configuration & DB
-│   │   ├── config.py
-│   │   └── database.py
+│   │   ├── exceptions.py # BusinessRuleException
+│   │   └── responses.py  # success_response, error_response
+│   ├── core/             # Core configuration
+│   │   ├── config.py     # Settings class
+│   │   └── database.py   # SQLAlchemy setup
 │   ├── recycling/        # Recycling module
-│   │   ├── models.py
-│   │   ├── schemas.py
-│   │   ├── services.py
-│   │   └── router.py
-│   └── users/           # User module
-│       ├── models.py
-│       ├── schemas.py
-│       └── router.py
-├── main.py              # FastAPI app
-├── dropme.db           # Database
-├── requirements.txt    # Dependencies
-└── README.md          # This file
+│   │   ├── models.py     # Recycling model
+│   │   ├── schemas.py    # Pydantic schemas
+│   │   ├── services.py   # Business logic
+│   │   └── router.py     # API endpoints
+│   └── users/            # User module
+│       ├── models.py     # User model
+│       ├── schemas.py    # Pydantic schemas
+│       └── router.py     # API endpoints
+├── main.py              # FastAPI app entry point
+├── dropme.db           # SQLite database (auto-created)
+├── .env                # Environment variables
+└── requirements.txt    # Python dependencies
 ```
 
----
-
-## 🌐 **API ENDPOINTS**
+## 🌐 API Endpoints
 
 ### **Base URL:** `http://localhost:8000`
 
-### **🔹 USER MANAGEMENT**
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/users/register` | Register new user |
-| GET | `/users/{user_id}` | Get user details & points |
+### **User Endpoints**
+| Method | Endpoint | Description | Status Codes |
+|--------|----------|-------------|--------------|
+| POST | `/users/register` | Register new user | 201, 400, 409 |
+| GET | `/users/{user_id}` | Get user details | 200, 404 |
 
-### **🔹 RECYCLING TRANSACTIONS**
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/recycling/` | Create recycling transaction |
-| GET | `/recycling/user/{user_id}` | Get user's recycling history |
-| GET | `/recycling/{recycling_id}` | Get specific transaction |
-| DELETE | `/recycling/{recycling_id}` | ❌ Blocked (for audit integrity) |
+### **Recycling Endpoints**
+| Method | Endpoint | Description | Status Codes |
+|--------|----------|-------------|--------------|
+| POST | `/recycling/` | Create recycling transaction | 201, 400, 404 |
+| GET | `/recycling/user/{user_id}` | Get user's recycling history | 200, 404 |
+| GET | `/recycling/{recycling_id}` | Get specific transaction | 200, 404 |
+| DELETE | `/recycling/{recycling_id}` | ⛔ Blocked (audit integrity) | 400 |
 
----
+## 📤 Sample API Requests
 
-## 📤 **SAMPLE API REQUESTS**
-
-### **1. Register a New User**
+### **Register User**
 ```bash
 curl -X POST "http://localhost:8000/users/register" \
   -H "Content-Type: application/json" \
-  -d '{"email": "john@example.com"}'
+  -d '{"email": "user@example.com"}'
 ```
 
-### **2. Recycle Items (Earn Points)**
+**Response (201 Created):**
+```json
+{
+  "status": "success",
+  "message": "User registered successfully",
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "points": 0
+  }
+}
+```
+
+### **Create Recycling Transaction**
 ```bash
 curl -X POST "http://localhost:8000/recycling/" \
   -H "Content-Type: application/json" \
@@ -101,78 +109,163 @@ curl -X POST "http://localhost:8000/recycling/" \
   }'
 ```
 
-### **3. Check User's Points Balance**
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "user_id": 1,
+  "material_type": "plastic",
+  "weight_kg": 2.5,
+  "points_earned": 25,
+  "created_at": "2024-01-20T10:30:00Z"
+}
+```
+
+### **Get User Details**
 ```bash
 curl "http://localhost:8000/users/1"
 ```
 
----
+**Response (200 OK):**
+```json
+{
+  "status": "success",
+  "message": "Success",
+  "data": {
+    "id": 1,
+    "email": "user@example.com",
+    "points": 25
+  }
+}
+```
 
-## 🎯 **FEATURES IMPLEMENTED**
+## 🎯 Implemented Features
 
-### **✅ TASK 1: CORE RECYCLING FLOW**
-- ✔ User registration with email identification
-- ✔ Recycling transaction creation
-- ✔ Points calculation and updating
-- ✔ SQLite database persistence
-- ✔ Complete Scan → Recycle → Earn Points flow
+### ✅ **Task 1: Core Recycling Flow**
+- User registration with email identification
+- Recycling transaction creation with points calculation
+- Points automatically added to user balance
+- SQLite database persistence
+- Complete "Scan → Recycle → Earn Points" workflow
 
-### **✅ TASK 2: API DESIGN & VALIDATION**
-- ✔ Pydantic input validation
-- ✔ Consistent error response format
-- ✔ Proper HTTP status codes
-- ✔ Business rule enforcement
-- ✔ OpenAPI documentation (auto-generated)
+### ✅ **Task 2: API Design & Validation**
+- Input validation using Pydantic schemas
+- Consistent response format (`success_response`, `error_response`)
+- Custom `BusinessRuleException` for business logic errors
+- Meaningful HTTP status codes (201, 400, 404, 409, 500)
 
----
+## 🛡 Business Rules & Validation
 
-## 🛡 **BUSINESS RULES**
+### **1. Input Validation**
+- Email validation using Pydantic's `EmailStr`
+- Material type restricted to: `plastic`, `glass`, `metal`, `paper`
+- Weight must be greater than 0
+- User must exist before creating recycling transaction
 
-### **🚫 Daily Limit**
-- Maximum **10 recycling transactions** per user per day
-- Returns error: `"Daily recycling limit exceeded"`
+### **2. Business Rule Enforcement**
 
-### **🚫 No Duplicate Transactions**
-- Same user + same material + same weight within **5 minutes** = Blocked
-- Returns error: `"Duplicate recycling detected"`
+**🚫 Daily Limit:** Maximum 10 recycling transactions per user per day
+```json
+{
+  "status": "error",
+  "message": "Daily recycling limit exceeded"
+}
+```
 
-### **🚫 No Deletion Policy**
-- Recycling transactions **cannot be deleted**
-- Ensures audit trail integrity
-- Returns error: `"Deleting recycling records is not allowed"`
+**🚫 Duplicate Prevention:** Same user + same material + same weight within 5 minutes
+```json
+{
+  "status": "error",
+  "message": "Duplicate recycling detected"
+}
+```
 
-### **✅ Valid Materials**
-- Only these materials accepted: **plastic, glass, metal, paper**
-- Invalid material returns: `"Unsupported material type"`
+**🚫 No Deletion Policy:** Transactions cannot be deleted for audit integrity
+```json
+{
+  "status": "error",
+  "message": "Deleting recycling records is not allowed"
+}
+```
 
----
+**🚫 Invalid Material:** Only supported materials accepted
+```json
+{
+  "status": "error",
+  "message": "Unsupported material type"
+}
+```
 
-## 📊 **POINTS SYSTEM**
+**🚫 Duplicate Email:** Email must be unique
+```json
+{
+  "status": "error",
+  "message": "Email already registered"
+}
+```
+
+## 📊 Points Calculation
+
+**Points = Weight (kg) × Rate (points/kg)**
 
 | Material | Points per kg | Example |
 |----------|--------------|---------|
-| **Plastic** | 10 points/kg | 2kg = 20 points |
-| **Glass** | 8 points/kg | 1.5kg = 12 points |
-| **Metal** | 15 points/kg | 0.5kg = 8 points |
-| **Paper** | 5 points/kg | 3kg = 15 points |
+| Plastic  | 10 points | 2.5 kg = 25 points |
+| Glass    | 8 points  | 1.0 kg = 8 points  |
+| Metal    | 15 points | 0.5 kg = 8 points  |
+| Paper    | 5 points  | 3.0 kg = 15 points |
 
-**Formula:** `Points = Weight (kg) × Rate (points/kg)`
+## 🔧 Technical Details
 
----
+### **Database Schema**
+**Users Table:**
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    points INTEGER DEFAULT 0
+);
+```
 
-## 🔧 **TECHNICAL STACK**
+**Recycling Table:**
+```sql
+CREATE TABLE recycling (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    material_type TEXT NOT NULL,
+    weight_kg REAL NOT NULL,
+    points_earned INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+```
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Framework | FastAPI | High-performance API framework |
-| Database | SQLite | Lightweight, file-based storage |
-| ORM | SQLAlchemy | Database operations |
-| Validation | Pydantic v2 | Data validation & serialization |
-| Documentation | OpenAPI | Auto-generated API docs |
+### **Environment Configuration**
+Create `.env` file:
+```env
+DATABASE_URL=sqlite:///./dropme.db
+MAX_RECYCLES_PER_DAY=10
+```
 
----
+### **Dependencies**
+```txt
+fastapi==0.104.1
+uvicorn==0.24.0
+sqlalchemy==2.0.23
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+```
 
-## 🚨 **ERROR EXAMPLES**
+## 📦 Postman Collection
+
+Import the provided `DropMe Backend.postman_collection.json` file which includes:
+- User registration requests
+- Recycling transaction creation
+- Error scenario testing
+- All implemented endpoints
+
+## 🚨 Error Handling Examples
 
 ### **400 Bad Request (Business Rule Violation)**
 ```json
@@ -182,15 +275,7 @@ curl "http://localhost:8000/users/1"
 }
 ```
 
-### **400 Bad Request (Duplicate)**
-```json
-{
-  "status": "error",
-  "message": "Duplicate recycling detected"
-}
-```
-
-### **404 Not Found**
+### **404 Not Found (User Not Found)**
 ```json
 {
   "status": "error",
@@ -198,7 +283,7 @@ curl "http://localhost:8000/users/1"
 }
 ```
 
-### **409 Conflict**
+### **409 Conflict (Duplicate Email)**
 ```json
 {
   "status": "error",
@@ -206,146 +291,100 @@ curl "http://localhost:8000/users/1"
 }
 ```
 
----
+## 🎨 API Documentation
 
-## 📦 **POSTMAN COLLECTION**
-
-**Import file:** `DropMe Backend.postman_collection.json`
-
-Contains ready-to-use requests for:
-- User registration
-- Recycling transactions
-- Error scenarios testing
-
----
-
-## 🗄 **DATABASE SCHEMA**
-
-### **📌 Users Table**
-| Column | Type | Description |
-|--------|------|-------------|
-| id | Integer | Primary key |
-| email | String | Unique user email |
-| points | Integer | Current points balance |
-
-### **📌 Recycling Table**
-| Column | Type | Description |
-|--------|------|-------------|
-| id | Integer | Primary key |
-| user_id | Integer | Foreign key to users |
-| material_type | String | Type of material |
-| weight_kg | Float | Weight in kilograms |
-| points_earned | Integer | Points earned |
-| created_at | DateTime | Transaction timestamp |
-
----
-
-## 🎨 **API DOCUMENTATION**
-
-### **Interactive Docs:**
+### **Interactive Documentation**
 - **Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
 - **ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ### **Features:**
-- Try API endpoints directly
+- Try API endpoints directly from browser
 - View request/response schemas
 - See example requests
 - View HTTP status codes
 
----
+## 🔄 Database Operations
 
-## ⚙️ **CONFIGURATION**
-
-Create `.env` file:
-```env
-# Database
-DATABASE_URL=sqlite:///./dropme.db
-
-# Business Rules
-MAX_RECYCLES_PER_DAY=10
-
-# Environment
-ENVIRONMENT=development
-APP_NAME=DropMe Backend
+### **Automatic Table Creation**
+```python
+# Tables are created automatically on startup
+Base.metadata.create_all(bind=engine)
 ```
 
----
+### **Relationships**
+- One User → Many Recycling transactions
+- Cascade delete: When user is deleted, all their recycling records are deleted
 
-## 🏗 **ARCHITECTURE DECISIONS**
+## ⚙️ Configuration
 
-| Decision | Reason | Impact |
-|----------|--------|--------|
-| **SQLite Database** | Simple setup, ACID compliance | Easy to migrate to PostgreSQL later |
-| **FastAPI Framework** | Async support, auto-docs | Faster development, better performance |
-| **Service Layer Pattern** | Separation of concerns | Maintainable, testable code |
-| **No Delete Policy** | Audit trail, fraud prevention | Transactions are permanent records |
-| **Email-only Auth** | MVP simplification | Can add JWT/OAuth2 later |
+### **Settings Class**
+```python
+class Settings(BaseSettings):
+    APP_NAME: str = "Drop Me Backend"
+    ENVIRONMENT: str = "development"
+    DATABASE_URL: str = "sqlite:///./dropme.db"
+    MAX_RECYCLES_PER_DAY: int = 10
+```
 
----
+### **Database Connection**
+```python
+# SQLite with SQLAlchemy
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+```
 
-## 📝 **ASSUMPTIONS MADE**
+## 📝 Assumptions & Design Decisions
 
-1. **Email is primary identifier** - No password system for MVP
-2. **Machines are trusted** - No additional device authentication
-3. **Weight accuracy** - Machines provide accurate weight measurements
-4. **Material types fixed** - 4 types cover majority of recycling
-5. **Single currency** - Points are the only reward system
+### **Assumptions**
+1. Email is sufficient for user identification (no passwords)
+2. Recycling machines are trusted devices
+3. Weight measurements are accurate
+4. Four material types cover most recycling needs
+5. Points system is linear (weight × rate)
 
----
+### **Design Decisions**
+1. **SQLite**: Chosen for simplicity and easy setup
+2. **FastAPI**: Modern, fast, with built-in OpenAPI docs
+3. **Service Layer**: Business logic separated from API routes
+4. **No Delete Policy**: Transactions are permanent for audit trail
+5. **Custom Exceptions**: Clear separation of business logic errors
 
-## 🔮 **FUTURE IMPROVEMENTS**
+## 🧪 Testing the Flow
 
-### **Priority 1:**
-- JWT authentication
-- Admin dashboard endpoints
-- Webhook for machine integration
-
-### **Priority 2:**
-- PostgreSQL migration
-- Redis caching layer
-- Rate limiting middleware
-
-### **Priority 3:**
-- Email notifications
-- QR code scanning
-- Bulk recycling support
-
----
-
-## 🚀 **TEST THE FULL FLOW**
-
+### **Complete Workflow Example**
 ```bash
 # 1. Register a user
 curl -X POST "http://localhost:8000/users/register" \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com"}'
 
-# 2. Recycle some items
+# Response: User created with id=1
+
+# 2. Create recycling transaction
 curl -X POST "http://localhost:8000/recycling/" \
   -H "Content-Type: application/json" \
   -d '{"user_id": 1, "material_type": "metal", "weight_kg": 1.2}'
 
-# 3. Check points earned
+# Response: 1.2kg metal = 18 points earned
+
+# 3. Check user points
 curl "http://localhost:8000/users/1"
+
+# Response: User now has 18 points
 ```
 
----
+## 📄 License
 
-## 📄 **LICENSE**
+Developed for DropMe technical assessment.
 
-Developed for DropMe technical assessment.  
-All code is ready for production use.
+## 🤝 Support
 
----
-
-## ❓ **NEED HELP?**
-
-1. Check API docs at `http://localhost:8000/docs`
-2. Review business rules section above
-3. Test with Postman collection provided
-4. Run the quick test script
+For issues or questions:
+1. Check API documentation at `http://localhost:8000/docs`
+2. Review the business rules section above
+3. Test with the provided Postman collection
 
 ---
 
-**✅ READY TO DEPLOY!**  
-Start the server and test the complete recycling flow today.
+**✅ Ready for Production!**  
+Start the server and test the complete recycling flow.
